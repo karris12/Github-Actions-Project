@@ -27,28 +27,33 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Trivy
+      - name: Trivy Installation
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget gnupg
-
-          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key \
-            | gpg --dearmor \
-            | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-
-          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" \
-            | sudo tee /etc/apt/sources.list.d/trivy.list
-
-          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg ldb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo https: //aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -y
           sudo apt-get install -y trivy
 
-      - name: Install Gitleaks
-        run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64.tar.gz \
-            | tar -xz
-          sudo mv gitleaks /usr/local/bin/gitleaks
+      - name: Trivy FS Scan
+        run: trivy fs --format table -o fs-report.json .
 
-      - name: Run Gitleaks Scan
-        run: |
-          gitleaks detect --source . --report-path gitleaks-report.json --report-format json
+      - name: Install Gitleaks
+        run: sudo apt install gitleaks -y
+
+      - name: Gitleaks Code Scan
+        run: gitleaks detect source . -r gitleaks-report.json -f json
+
+     
+  test:
+        runs-on: self-hosted
+        steps: 
+         - uses: actions/checkout@4
+         - name: Set up JDK 17
+           uses: actions/setup-java@4
+           with:
+               java-version: '17'
+               distribution: 'temurin'
+               cache: maven
+         - name: Unit Test Cases
+           run: mvn test

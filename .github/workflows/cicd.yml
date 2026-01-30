@@ -107,10 +107,14 @@ jobs:
         with:
           args: >
             -X
-            -Dsonar.projectKey=my-project-key
-            -Dsonar.projectName=my-project-name
+            -Dsonar.projectKey=YOUR_PROJECT_KEY
+            -Dsonar.projectName=YOUR_PROJECT_NAME
             -Dsonar.sources=src
-            -Dsonar.java.binaries=target
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.sourceEncoding=UTF-8
+            -Dsonar.java.skipUnchanged=true
+            -Dsonar.scanner.jvmArgs=-Xmx1024m
+
 
       - name: SonarQube Quality Gate
         uses: sonarsource/sonarqube-quality-gate-action@v1.1.0

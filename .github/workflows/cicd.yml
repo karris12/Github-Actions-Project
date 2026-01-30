@@ -99,6 +99,13 @@ jobs:
       - name: Build Project
         run: mvn clean package
 
+      - name: Clean workspace
+        run: |
+          rm -rf ~/.sonar
+          rm -rf sonar-temp
+          rm -rf target
+
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v7
         env:
@@ -112,8 +119,10 @@ jobs:
             -Dsonar.sources=src
             -Dsonar.java.binaries=target/classes
             -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.java.skipUnchanged=true
             -Dsonar.scanner.jvmArgs=-Xmx1024m
+            -Dsonar.scanner.disableCache=true
+            -Dsonar.working.directory=sonar-temp
+
 
 
       - name: SonarQube Quality Gate
